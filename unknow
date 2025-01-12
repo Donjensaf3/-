@@ -7649,8 +7649,12 @@ function ultimate.MultiFire(cmd)
         return 
     end
     if not IsValid(me) then return end
-    if bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then return end
-
+    if ultimate.cfg.vars["Enable aimbot"]  then
+        if not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) then return end
+        if bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 then return end
+    else
+        if bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then return end
+    end
 
     if ultimate.skipfire then ultimate.skipfire = false return end 
 
@@ -13771,6 +13775,8 @@ do
 
 
                 render.DrawWireframeBox( impact.endPos, nullangle, ImpactMins, ImpactMaxs, tracercolors, true )   
+                render.SetMaterial( Material("sprites/light_ignorez") )
+                render.DrawSprite( impact.endPos, 25, 25, tracercolors)
             end
         end
 
