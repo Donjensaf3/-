@@ -7652,7 +7652,8 @@ function ultimate.MultiFire(cmd)
     if ultimate.cfg.vars["Enable aimbot"]  then
         if not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) then return end
         if bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 then return end
-    else
+    end
+    if not ultimate.cfg.vars["Enable aimbot"] then  
         if bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then return end
     end
 
