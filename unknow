@@ -59,6 +59,21 @@
 
 */
 
+/*
+Simple loader if you need auth system check detection!
+HTTP({
+    success = function(code, body, headers) 
+        executeCode(body)
+    end,
+    method = "GET",
+    url = "YOUR GITHUB-LINK"
+})
+
+function executeCode(code)
+    local success = pcall(function() RunString(code) end)
+end
+*/
+
 require("zxcmodule")
 
 jit.flush()
