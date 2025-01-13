@@ -3827,7 +3827,7 @@ function ultimate.tabs.Rage()
     local p = ultimate.itemPanel( "Sequence", 2, 195 ):GetItemPanel()
 
     ultimate.ui.CheckBox( p, "Sequence manip", "Sequence manip", false, true )
-    ultimate.ui.ComboBox( p, "Sequence mode", "Sequence manip mode", { "Custom", "Animation freezer", "Multi fire","AirStack","Lagexploit","M9K" } )
+    ultimate.ui.ComboBox( p, "Sequence mode", "Sequence manip mode", { "Custom", "Animation freezer", "MultiFire","AirStack","Lagexploit","M9K",} )
     ultimate.ui.Slider( p, "Out Sequence", "OutSequence", 1, 500, 0 )
     ultimate.ui.CheckBox( p, "Slowmotion", "Slowmotion", false, true )
     ultimate.ui.Slider( p, "Slowmotion Ticks", "SlowmotionTicks", 1, 100, 0 )
@@ -7614,18 +7614,12 @@ function ultimate.autopeakThink()
 end
 
 // Sequence Manipulation 
+
 ultimate.seqshit = false
 ultimate.freezedTicks = 0
 ultimate.maxFreezeTicks = math_Round( 1 / TickInterval ) 
 function ultimate.AnimationFreezer()
-    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then
-        
-        if ultimate.seqshit then
-            ultimate.seqshit = false 
-        end
-
-        return 
-    end
+    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
     if ultimate.freezedTicks < ultimate.maxFreezeTicks then
         ded.SetOutSequenceNr( ded.GetOutSequenceNr() + ultimate.maxFreezeTicks - 1 ) 
 
@@ -7635,63 +7629,41 @@ function ultimate.AnimationFreezer()
     end
 end
 
-
 ultimate.skipfire = false 
 local TickRate     = math_floor( 1 / TickInterval )
 
 function ultimate.MultiFire(cmd)
-    if not ultimate.cfg.vars["Sequence manip"]  then return end
-    if not IsValid(me) then return end
-    if ultimate.cfg.vars["Enable aimbot"]  then
-        if not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) then return end
-        if bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 then return end
-    end
-    if not ultimate.cfg.vars["Enable aimbot"] and not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) and bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then  
-        return end
-
-    if ultimate.skipfire then ultimate.skipfire = false return end 
-
+    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
+    if ultimate.skipfire then 
+        ultimate.skipfire = false 
+        return 
+    end 
     ded.SetOutSequenceNr(ded.GetOutSequenceNr()  + TickRate - 1)
     ultimate.skipfire = true
-
 end
 
-local nextm9k = 0
+ultimate.nextm9k = 0
 
 function ultimate.M9K(cmd)
-    if not ultimate.cfg.vars["Sequence manip"] then
-        
-        if ultimate.seqshit then
-            ultimate.seqshit = false 
-        end
-
-        return 
-    end
-    if CurTime() > nextm9k and bit.band(cmd:GetButtons(), IN_ATTACK) != 0 then
+    if not ultimate.cfg.vars["Sequence manip"] then return end
+    if CurTime() > ultimate.nextm9k and bit.band(cmd:GetButtons(), IN_ATTACK) != 0 then
         ded.SetOutSequenceNr( ded.GetOutSequenceNr() + 5000 ) 
     end
 end
 
 function ultimate.AirStack()
-    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then
-        
-        if ultimate.seqshit then
-            ultimate.seqshit = false 
-        end
-
-        return 
-    end
+    if not ultimate.cfg.vars["Sequence manip"] and not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
     ded.SetOutSequenceNr( ded.GetOutSequenceNr() + TickRate + 1 ) 
 end
 
 ultimate.lagexploit = false
-local seqshift = TickRate - 3
+ultimate.seqshift = TickRate - 3
 
 function ultimate.LagExploit()
     if ultimate.SendPacket then
-        if seqshift > 0 then
+        if ultimate.seqshift > 0 then
             if !ultimate.lagexploit then
-                ded.SetOutSequenceNr(ded.GetOutSequenceNr() + seqshift)
+                ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
                 ultimate.lagexploit = true
             else
                 ded.SetNetChokedPackets(127)
@@ -7945,21 +7917,23 @@ function ultimate.CreateMove(cmd)
 	end
 
     if ultimate.cfg.vars["Sequence manip"] then
+
+        if ultimate.cfg.vars["Sequence manip mode"] == 5 then
+            ultimate.LagExploit()
+        else
+            ultimate.lagexploit = false
+        end
+
         if ultimate.cfg.vars["Sequence manip mode"] ==  1 then
             ultimate.SequenceShit(cmd)
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  2 then
-        ultimate.AnimationFreezer()
+            ultimate.AnimationFreezer()
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  3 then
             ultimate.MultiFire(cmd)
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  4 then
             ultimate.AirStack()
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  6 then
             ultimate.M9K(cmd)
-        end
-        if ultimate.cfg.vars["Sequence manip mode"] == 5 then
-            ultimate.LagExploit()
-        else
-            ultimate.lagexploit = false
         end
     end
 
