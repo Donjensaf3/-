@@ -7310,7 +7310,7 @@ do
         if ultimate.moveType == MOVETYPE_NOCLIP then return false end
         if me:WaterLevel() > 0 then return false end
 
-        if not ultimate.target then return false end
+        if not ultimate.aatarget then return false end
         if ultimate.cfg.binds["Anti aim"] != 0 and not ultimate.IsKeyDown(ultimate.cfg.binds["Anti aim"]) then
             return false
         end
