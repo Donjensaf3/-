@@ -595,7 +595,7 @@ ultimate.cfg.binds["Anti aim"]                   = 0
 ultimate.cfg.vars["Inverter"] = false
 ultimate.cfg.binds["Inverter"] = 0
 
-ultimate.cfg.vars["Yaw base"]                   = 1
+ultimate.cfg.vars["Yaw base"]                   = 2
 ultimate.presets["Yaw base"] = { "Viewangles", "At targets" }
 ultimate.cfg.vars["Yaw"]                        = 1
 ultimate.presets["Yaw"] = { 
@@ -7001,7 +7001,6 @@ end
 */
 
 ultimate.aatarget = nil
-
 function ultimate.PredictedPos(ply)
     return ply:GetPos() + ply:GetVelocity() * TickInterval
 end
@@ -7311,6 +7310,7 @@ do
         if me:WaterLevel() > 0 then return false end
 
         if not ultimate.aatarget then return false end
+        if ultimate.aatarget:IsDormant() then return false end
         if ultimate.cfg.binds["Anti aim"] != 0 and not ultimate.IsKeyDown(ultimate.cfg.binds["Anti aim"]) then
             return false
         end
@@ -14910,4 +14910,3 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
-
