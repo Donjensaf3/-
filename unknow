@@ -7640,22 +7640,14 @@ ultimate.skipfire = false
 local TickRate     = math_floor( 1 / TickInterval )
 
 function ultimate.MultiFire(cmd)
-    if not ultimate.cfg.vars["Sequence manip"]  then
-        
-        if ultimate.seqshit then
-            ultimate.seqshit = false 
-        end
-
-        return 
-    end
+    if not ultimate.cfg.vars["Sequence manip"]  then return end
     if not IsValid(me) then return end
     if ultimate.cfg.vars["Enable aimbot"]  then
         if not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) then return end
         if bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 then return end
     end
-    if not ultimate.cfg.vars["Enable aimbot"] then  
-        if bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then return end
-    end
+    if not ultimate.cfg.vars["Enable aimbot"] and not ultimate.IsKeyDown( ultimate.cfg.binds["Enable aimbot"] ) and bit.band(cmd:GetButtons(), IN_ATTACK) != IN_ATTACK then  
+        return end
 
     if ultimate.skipfire then ultimate.skipfire = false return end 
 
@@ -7800,7 +7792,6 @@ function ultimate.player_disconnect(data)
     for _, data in ipairs(ultimate.DetectionSteamId) do
         if data.steamID == steamID then
             chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, data.Name .. " покинул игру Rq")
-            break
         end
     end
 end
@@ -7819,7 +7810,6 @@ function ultimate.OnEntityCreated(ent)
         for _, data in ipairs(ultimate.DetectionSteamId) do  
             if ent:SteamID() == data.steamID then
                 chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, data.Name .. " зашел!")
-                break
             end
         end
     end
