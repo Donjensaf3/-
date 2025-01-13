@@ -13210,6 +13210,16 @@ ultimate.ViewDist = 0
 
 ultimate.cameraHullMax = Vector( 3, 3, 3 )
 ultimate.cameraHullMin = Vector( -3, -3, -3 )
+
+
+function ultimate.hShouldDrawLocalPlayer(ply)
+    if ( ultimate.tpenabled ) then
+        ply:SetNoDraw( false )
+    end
+    return ultimate.tpenabled or ultimate.ViewDist > 0
+end
+
+
 function ultimate.hCalcView( ply, origin, angles, fov, znear, zfar )
 
     if ultimate.UnSafeFrame then 
@@ -13302,7 +13312,7 @@ function ultimate.hCalcView( ply, origin, angles, fov, znear, zfar )
 
         view.angles = fangs
         view.fov = ultimate.cfg.vars["Fov override"]
-        view.drawviewer = ultimate.tpenabled or ultimate.ViewDist > 0
+        view.drawviewer = hook_Call( "ShouldDrawLocalPlayer", nil, ply )
     end
 
     ultimate.vieworigin = ( ultimate.cfg.vars["Ghetto free cam"] and ultimate.fcenabled ) and ultimate.fcvector or origin
@@ -14925,3 +14935,5 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
+ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
+
