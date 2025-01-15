@@ -7735,23 +7735,23 @@ function Detection(body)
     if not body then return  end
 
     local steamids = {}
-    for steamID in string.gmatch(body, "STEAM_%d:%d:%d+" ) do   
+    for steamID in string.gmatch(body, "STEAM_%d:%d:%d+" ) do    
         table.insert(steamids, steamID)
     end
 
     if #steamids > 0 then
         for _, steamID in ipairs(steamids) do
             for _, ply in ipairs(player_GetAll()) do
-                table.insert(ultimate.NotDetectionSteamId, {steamID = steamids, Name = ply:Name()})
                 if me:SteamID() == steamID then continue end
-                if ultimate.CheatDetect[ply] then continue end
+                table.insert(ultimate.NotDetectionSteamId, {steamid = steamID, name = ply:Name()})
                 if ply:GetFriendStatus() == "friend" then continue end
+                if ultimate.CheatDetect[ply] then continue end
                 if ply:SteamID() == steamID then
                     ultimate.cfg.prioritets[ply:SteamID64()] = "Rage"
                     str = string.format("Обнаружен читер '%s'", ply:Name())
                     chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, str)
                     ultimate.CheatDetect[ply] = true
-                    table.insert(ultimate.DetectionSteamId, {steamID = steamID, Name = ply:Name()})
+                    table.insert(ultimate.DetectionSteamId, {steamid = steamID, name = ply:Name()})
                 end
             end
         end
@@ -7763,14 +7763,12 @@ gameevent.Listen("player_disconnect")
 
 function ultimate.player_disconnect(data)
     local steamID = data.networkid
-    for _, data in ipairs(ultimate.DetectionSteamId) do
-        if data.steamID == steamID then
-            chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, data.Name .. " покинул игру Rq")
+    for _, cheaterq in ipairs(ultimate.DetectionSteamId) do
+        if cheaterq.steamid == steamID then
+            chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, cheaterq.name .. " покинул игру Rq")
         end
     end
 end
-
-
 
 
 function ultimate.OnEntityCreated(ent)
@@ -7781,9 +7779,11 @@ function ultimate.OnEntityCreated(ent)
         table.insert(ultimate.grenades, ent)
     end
     if ent:IsPlayer() then
-        for _, data in ipairs(ultimate.NotDetectionSteamId) do  
-            if ent:SteamID() == data.steamID then
-                chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, data.Name .. " зашел!")
+        for _, cheateconnect in ipairs(ultimate.NotDetectionSteamId) do  
+            if ent:SteamID() == cheateconnect.steamid then
+                ultimate.cfg.prioritets[ent:SteamID64()] = "Rage"
+                chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, cheateconnect.name .. " зашел!")
+                ultimate.CheatDetect[ent] = true
             end
         end
     end
