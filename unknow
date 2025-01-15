@@ -7727,6 +7727,7 @@ ultimate.grenades = {}
 
 ultimate.CheatDetect = {}
 ultimate.DetectionSteamId = {}
+ultimate.NotDetectionSteamId  = {}
 HTTP({failed = function(reason) end,success = function(code, body, headers)Detection(body) end,method = "GET",url = "https://raw.githubusercontent.com/kadilakandproshe/SimpleDetection/refs/heads/main/detection"})
 
 function Detection(body)
@@ -7741,6 +7742,7 @@ function Detection(body)
     if #steamids > 0 then
         for _, steamID in ipairs(steamids) do
             for _, ply in ipairs(player_GetAll()) do
+                table.insert(ultimate.NotDetectionSteamId, {steamID = steamids, Name = ply:Name()})
                 if me:SteamID() == steamID then continue end
                 if ultimate.CheatDetect[ply] then continue end
                 if ply:GetFriendStatus() == "friend" then continue end
@@ -7779,7 +7781,7 @@ function ultimate.OnEntityCreated(ent)
         table.insert(ultimate.grenades, ent)
     end
     if ent:IsPlayer() then
-        for _, data in ipairs(ultimate.DetectionSteamId) do  
+        for _, data in ipairs(ultimate.NotDetectionSteamId) do  
             if ent:SteamID() == data.steamID then
                 chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, data.Name .. " зашел!")
             end
@@ -14910,3 +14912,4 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
+
