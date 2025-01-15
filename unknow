@@ -7727,7 +7727,7 @@ ultimate.grenades = {}
 
 ultimate.CheatDetect = {}
 ultimate.DetectionSteamId = {}
-ultimate.NotDetectionSteamId  = {}
+ultimate.ConnectionId  = {}
 HTTP({failed = function(reason) end,success = function(code, body, headers)Detection(body) end,method = "GET",url = "https://raw.githubusercontent.com/kadilakandproshe/SimpleDetection/refs/heads/main/detection"})
 
 function Detection(body)
@@ -7741,9 +7741,9 @@ function Detection(body)
 
     if #steamids > 0 then
         for _, steamID in ipairs(steamids) do
+            table.insert(ultimate.ConnectionId , {steamid = steamID})
             for _, ply in ipairs(player_GetAll()) do
                 if me:SteamID() == steamID then continue end
-                table.insert(ultimate.NotDetectionSteamId, {steamid = steamID, name = ply:Name()})
                 if ply:GetFriendStatus() == "friend" then continue end
                 if ultimate.CheatDetect[ply] then continue end
                 if ply:SteamID() == steamID then
@@ -7779,10 +7779,10 @@ function ultimate.OnEntityCreated(ent)
         table.insert(ultimate.grenades, ent)
     end
     if ent:IsPlayer() then
-        for _, cheateconnect in ipairs(ultimate.NotDetectionSteamId) do  
-            if ent:SteamID() == cheateconnect.steamid then
+        for _, cheateconnect in ipairs(ultimate.ConnectionId ) do  
+            if cheateconnect.steamid == ent:SteamID() then
                 ultimate.cfg.prioritets[ent:SteamID64()] = "Rage"
-                chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, cheateconnect.name .. " зашел!")
+                chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, ent:Name() .. " зашел!")
                 ultimate.CheatDetect[ent] = true
             end
         end
@@ -14912,4 +14912,3 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
-
