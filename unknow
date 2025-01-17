@@ -5038,9 +5038,11 @@ function ultimate.CanShoot( cmd )
 
     */
 
+    
     if ultimate.cfg.vars["Auto fire"] and cmd:KeyDown(IN_ATTACK) then
         return false
     end
+    
 
 	if ultimate.cfg.vars["Bullet time"] and ultimate.activeWeapon:GetNextPrimaryFire() >= ded.GetServerTime(cmd)-ultimate.cfg.vars["Time"]  then
 		return false
@@ -6560,8 +6562,9 @@ function ultimate.Aim(cmd)
         if ultimate.cfg.vars["StandartResolver"] then
             ply.aimshots = (ply.aimshots or 0) + 1
         end
-        
-        cmd:AddKey( altfire and IN_ATTACK2 or IN_ATTACK ) 
+
+
+       cmd:AddKey( altfire and IN_ATTACK2 or IN_ATTACK ) 
 
         ultimate.SkipCommand = true 
     end
@@ -7631,17 +7634,25 @@ function ultimate.AnimationFreezer()
 end
 
 ultimate.skipfire = false 
+ultimate.attacklasttick = false 
 local TickRate     = math_floor( 1 / TickInterval )
 
+
 function ultimate.MultiFire(cmd)
-    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
-    if ultimate.skipfire then 
-        ultimate.skipfire = false 
-        return 
-    end 
-    ded.SetOutSequenceNr(ded.GetOutSequenceNr()  + TickRate - 1)
-    ultimate.skipfire = true
+    if not ultimate.cfg.vars["Sequence manip"] then return end
+
+    local attack = bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 
+
+    if attack and not ultimate.attacklasttick then
+        ded.SetOutSequenceNr(ded.GetOutSequenceNr() + TickRate - 1)
+        ultimate.skipfire = true
+    elseif ultimate.skipfire then
+        ultimate.skipfire = false
+    end
+
+    ultimate.attacklasttick = attack
 end
+
 
 ultimate.nextm9k = 0
 
@@ -7662,15 +7673,18 @@ ultimate.seqshift = TickRate - 3
 
 function ultimate.LagExploit()
     if ultimate.SendPacket then
-        if !ultimate.lagexploit then
-            ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
-            ultimate.lagexploit = true
+        if ultimate.seqshift > 0 then
+            if !ultimate.lagexploit then
+                ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
+                ultimate.lagexploit = true
+            else
+                ded.SetNetChokedPackets(127)
+            end
         else
-            ded.SetNetChokedPackets(127)
+            ultimate.lagexploit = false
         end
     end
 end
-
 
 
 function ultimate.SequenceShit(cmd)
@@ -14906,3 +14920,4 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
+
