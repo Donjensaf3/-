@@ -4026,7 +4026,7 @@ function ultimate.tabs.Visuals()
     ultimate.ui.ComboBox( p, "Style", "Tickbase naebnut", { "Text", "Bar", "Lines" , "Numbers" } )
     ultimate.ui.CheckBox( p, "Info indicators", "info", false, false, true, false, false, function(p) ultimate.ui.ColorPicker( "info2", p ) end )
     ultimate.ui.CheckBox( p, "Auto Vape indicator", "Auto Vape ind")
-    ultimate.ui.ComboBox( p, "Style", "infomode", { "Ultimate", "Noxis" , "CsGo","SupremeHook" } )
+    ultimate.ui.ComboBox( p, "Style", "infomode", { "Ultimate", "Noxis" , "CsGo","NEVERMISS" } )
 
 
 end
@@ -7308,9 +7308,10 @@ do
         if ultimate.moveType == MOVETYPE_LADDER then return false end
         if ultimate.moveType == MOVETYPE_NOCLIP then return false end
         if me:WaterLevel() > 0 then return false end
-
-        if not ultimate.aatarget then return false end
-        if ultimate.aatarget:IsDormant() then return false end
+        if ultimate.cfg.vars["Yaw base"] == 2 then
+            if not ultimate.aatarget then return false end
+            if ultimate.aatarget:IsDormant() then return false end
+        end
         if ultimate.cfg.binds["Anti aim"] != 0 and not ultimate.IsKeyDown(ultimate.cfg.binds["Anti aim"]) then
             return false
         end
@@ -7652,7 +7653,7 @@ function ultimate.M9K(cmd)
 end
 
 function ultimate.AirStack()
-    if not ultimate.cfg.vars["Sequence manip"] and not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
+    if not ultimate.cfg.vars["Sequence manip"] or not ultimate.IsKeyDown(ultimate.cfg.binds["Sequence manip"]) then return end
     ded.SetOutSequenceNr( ded.GetOutSequenceNr() + TickRate + 1 ) 
 end
 
@@ -7661,15 +7662,11 @@ ultimate.seqshift = TickRate - 3
 
 function ultimate.LagExploit()
     if ultimate.SendPacket then
-        if ultimate.seqshift > 0 then
-            if !ultimate.lagexploit then
-                ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
-                ultimate.lagexploit = true
-            else
-                ded.SetNetChokedPackets(127)
-            end
+        if !ultimate.lagexploit then
+            ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
+            ultimate.lagexploit = true
         else
-            ultimate.lagexploit = false
+            ded.SetNetChokedPackets(127)
         end
     end
 end
@@ -7920,12 +7917,6 @@ function ultimate.CreateMove(cmd)
 
     if ultimate.cfg.vars["Sequence manip"] then
 
-        if ultimate.cfg.vars["Sequence manip mode"] == 5 then
-            ultimate.LagExploit()
-        else
-            ultimate.lagexploit = false
-        end
-
         if ultimate.cfg.vars["Sequence manip mode"] ==  1 then
             ultimate.SequenceShit(cmd)
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  2 then
@@ -7937,6 +7928,12 @@ function ultimate.CreateMove(cmd)
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  6 then
             ultimate.M9K(cmd)
         end
+    end
+
+    if ultimate.cfg.vars["Sequence manip mode"] == 5 and ultimate.cfg.vars["Sequence manip"] then
+        ultimate.LagExploit()
+    else
+        ultimate.lagexploit = false
     end
 
     if not ultimate.seqshit then
@@ -9824,7 +9821,7 @@ do
     local indpx, indpy = scrw / 2 - 100, scrh/2 + 85
     local indpax, indpay = scrw / 2 - 40, scrh/2 + 150
     local charge = 0
-    local superme,supermes = Color(15,48, 195),Color(165,18, 95)
+    local nevermiss,nevermiss2 = Color(15,48, 195),Color(165,18, 95)
     local csgowhite,csgored = Color(255,255,255),Color(255,25,5)
     local chargestate, ccharge, chargecolor = "NOT CHARGED", 0, chargedcolor
 
@@ -9894,20 +9891,18 @@ do
 
             elseif infomode == 4 then
                 surface_SetFont("CloseCaption_Bold")
-                surface_SimpleText(50,scrh-500,"Choke: " .. ultimate.fakeLagTicks, superme)
-                surface_SimpleText(50,scrh-480,"Vel: " .. math_Round(me:GetVelocity():Length2D()), superme)
-                surface_SimpleText(50,scrh-460,"LagExploit", ultimate.lagexploit and supermes or superme)
+                surface_SimpleText(50,scrh-500,"Choke: " .. ultimate.fakeLagTicks, nevermiss)
+                surface_SimpleText(50,scrh-480,"Vel: " .. math_Round(me:GetVelocity():Length2D()), nevermiss)
+                surface_SimpleText(50,scrh-460,"LagExploit", ultimate.lagexploit and nevermiss2 or nevermiss)
                 if ultimate.cfg.vars["Sequence manip"] and ultimate.cfg.vars["Sequence manip mode"] == 5 then
-                    surface_SimpleText(50,scrh-440,"Simtime: " .. ultimate.TIME_TO_TICKS( ded.GetSimulationTime( me:EntIndex() ) ) , supermes)
-                    surface_SimpleText(50,scrh-420,"Delay: " .. engine.TickCount() - me:GetInternalVariable("m_nTickBase") , supermes)
-                  --  surface_SimpleText(50,scrh-400,"JOJO STAND: " .. engine.TickCount() - me:GetInternalVariable("m_nTickBase") / TickRate - ultimate.TIME_TO_TICKS( ded.GetSimulationTime( me:EntIndex() ) ) , supermes)
+                    surface_SimpleText(50,scrh-440,"Simtime: " .. ultimate.TIME_TO_TICKS( ded.GetSimulationTime( me:EntIndex() ) ) , nevermiss2)
+                    surface_SimpleText(50,scrh-420,"Delay: " .. engine.TickCount() - me:GetInternalVariable("m_nTickBase") , nevermiss2)
+                    surface_SimpleText(50,scrh-400,"Valid: " .. engine.TickCount() - me:GetInternalVariable("m_nTickBase") / TickRate - ultimate.TIME_TO_TICKS( ded.GetSimulationTime( me:EntIndex() ) ) , nevermiss2)
                 end
             end
 
             
         end
-        
-
         if ultimate.cfg.vars["Tickbase indicator"] then
             local gradcolor, chargedcolor, unchargedcolor = string_ToColor( ultimate.cfg.colors["Tickbase indicatorgrad"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicator"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicatoruncharged"] )
             local lc, blc = string_ToColor( ultimate.cfg.colors["Tickbase indicator"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicatoruncharged"] )
@@ -12909,8 +12904,7 @@ function ultimate.CreateRadar()
         local circle = string_ToColor( ultimate.cfg.colors["CircleRadar"] ) 
         surface_SetFont("Wveranda")
         
-        local plyPos = me:GetPos()
-        local plyAng = me:EyeAngles()
+       
 
         surface_SetDrawColor(radar) 
         surface_DrawRect(0, 20, w, h - 20)
@@ -12923,28 +12917,12 @@ function ultimate.CreateRadar()
         surface_DrawOutlinedRect(0, 0, w, h )
 
 
-        surface_SetDrawColor(up) 
-        surface_DrawRect(0, 0, w, 20)
-
-        surface_SetDrawColor(uping) 
-        surface_DrawRect(0, 0, w, 3)
-
-        surface_SetTextColor(txt)
-        
-        local tw, th = surface_GetTextSize("Radar")
-        surface_SetTextPos((w - tw) / 2, (20 - th) / 2 )
-        surface_DrawText("Radar")
-        surface_SetDrawColor(radar)
-        surface_DrawRect(0, 20, w, h - 20)
-
-
-
-        for _, v in pairs(player.GetAll()) do
+        for _, v in pairs(player_GetAll()) do
             if v == me then continue end
             local pos = v:GetPos()
-            local diff = pos - plyPos
+            local diff = pos - me:GetPos()
             diff.z = 0
-            local angle = math.rad(-plyAng.y + 90)
+            local angle = math.rad(-ultimate.SilentAngle .y + 90)
             local cos = math.cos(angle)
             local sin = math.sin(angle)
             local x = diff.x * cos - diff.y * sin
@@ -12961,6 +12939,22 @@ function ultimate.CreateRadar()
                 draw.SimpleText(v:Nick(), "Wveranda", w / 2 + x, 20 + (h - 20) / 2 - y - 15, name, TEXT_ALIGN_CENTER)
             end
         end
+        
+        surface_SetDrawColor(up) 
+        surface_DrawRect(0, 0, w, 20)
+
+        surface_SetDrawColor(uping) 
+        surface_DrawRect(0, 0, w, 3)
+
+        surface_SetTextColor(txt)
+        
+        local tw, th = surface_GetTextSize("Radar")
+        surface_SetTextPos((w - tw) / 2, (20 - th) / 2 )
+        surface_DrawText("Radar")
+
+        surface_SetDrawColor(radar)
+        surface_DrawRect(0, 20, w, h - 20)
+
     end
     
     function radarFrame:Think()
