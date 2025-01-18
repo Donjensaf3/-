@@ -1,8 +1,5 @@
 /*
 
-adaptive sequince 
-detection friend and steam name
-
 ///////////////////////////////Великие слова перед началом святого\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 ------------------------------------------------------------------------------------------------------
@@ -7800,8 +7797,11 @@ function ultimate.OnEntityCreated(ent)
     if ent:IsPlayer() then
         for _, cheateconnect in ipairs(ultimate.ConnectionId ) do  
             if cheateconnect.steamid == ent:SteamID() then
+                if ent:GetFriendStatus() == "friend" then continue end
                 ultimate.cfg.prioritets[ent:SteamID64()] = "Rage"
-                chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, ent:Name() .. " зашел!")
+                steamworks.RequestPlayerInfo(ent:SteamID64(), function(Name)
+                    chat.AddText(Color(255, 0, 0), "[" .. ultimate.cfg.vars["Custom Cheat"] .. "] ", color_white, Name .. " зашел!")
+                end)
                 ultimate.CheatDetect[ent] = true
             end
         end
@@ -14930,5 +14930,4 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
-
 
