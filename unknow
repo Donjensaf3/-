@@ -1,5 +1,8 @@
 /*
 
+adaptive sequince 
+detection friend and steam name
+
 ///////////////////////////////Великие слова перед началом святого\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 ------------------------------------------------------------------------------------------------------
@@ -3827,7 +3830,7 @@ function ultimate.tabs.Rage()
     local p = ultimate.itemPanel( "Sequence", 2, 195 ):GetItemPanel()
 
     ultimate.ui.CheckBox( p, "Sequence manip", "Sequence manip", false, true )
-    ultimate.ui.ComboBox( p, "Sequence mode", "Sequence manip mode", { "Custom", "Animation freezer", "MultiFire","AirStack","Lagexploit","M9K",} )
+    ultimate.ui.ComboBox( p, "Sequence mode", "Sequence manip mode", { "Custom", "Animation freezer", "MultiFire","AirStack","Lagexploit","M9K","Adaptive"} )
     ultimate.ui.Slider( p, "Out Sequence", "OutSequence", 1, 500, 0 )
     ultimate.ui.CheckBox( p, "Slowmotion", "Slowmotion", false, true )
     ultimate.ui.Slider( p, "Slowmotion Ticks", "SlowmotionTicks", 1, 100, 0 )
@@ -5398,14 +5401,14 @@ function ultimate.GetSortedPlayers( mode, selfpred, plypred, vischeck )
         if ultimate.cfg.vars["Ignores-Nodraw"] and v:IsEffectActive( EF_NODRAW ) then continue end 
         if ultimate.cfg.vars["Ignores-God time"] and v:GetColor().a < 255 then continue end 
         if ultimate.cfg.vars["Ignores-Driver"] and v:InVehicle() then continue end 
-
+ 
 
         local iTeamEnemy = ultimate.GetTeam( v )
         if st == TEAM_SPECTATOR or ultimate.cfg.vars["Ignores-Teammates"] and iTeamLocal == iTeamEnemy then continue end 
         if ultimate.cfg.vars["Ignores-Nocliping"] and v:GetMoveType() == MOVETYPE_NOCLIP then continue end 
 		if ultimate.cfg.vars["Ignores-Legits"] then local pitch = v:EyeAngles().p if pitch > -88 and pitch < 88 then continue end end
         if ultimate.cfg.vars["Ignores-RuseliteOptimization"] and IsValid(me) and (me:GetPos() - v:GetPos()):Length() > 3499 then continue end
-    
+        
         if vischeck then
 			local bone = ultimate.GetBones( v )[1]
 			local dir = me:GetShootPos() - bone
@@ -7701,7 +7704,12 @@ function ultimate.SequenceShit(cmd)
 
     ultimate.seqshit = true
     ultimate.SendPacket = true
-    ded.SetOutSequenceNr(ded.GetOutSequenceNr() + amt)
+    if ultimate.cfg.vars["Sequence manip mode"]  == 7 then
+        ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
+    else 
+        ded.SetOutSequenceNr(ded.GetOutSequenceNr() + amt)
+    end 
+    
 end
 
 
@@ -7941,6 +7949,8 @@ function ultimate.CreateMove(cmd)
             ultimate.AirStack()
         elseif ultimate.cfg.vars["Sequence manip mode"] ==  6 then
             ultimate.M9K(cmd)
+        elseif ultimate.cfg.vars["Sequence manip mode"]  == 7 then
+            ultimate.SequenceShit(cmd)
         end
     end
 
@@ -14920,4 +14930,5 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
+
 
