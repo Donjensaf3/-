@@ -1,5 +1,6 @@
 /*
 
+
 ///////////////////////////////Великие слова перед началом святого\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 ------------------------------------------------------------------------------------------------------
@@ -7670,7 +7671,7 @@ end
 
 ultimate.lagexploit = false
 ultimate.seqshift = TickRate - 3
-
+ultimate.adaptiveseq = (TickRate / 2) - 3
 function ultimate.LagExploit()
     if ultimate.SendPacket then
         if ultimate.seqshift > 0 then
@@ -7702,7 +7703,7 @@ function ultimate.SequenceShit(cmd)
     ultimate.seqshit = true
     ultimate.SendPacket = true
     if ultimate.cfg.vars["Sequence manip mode"]  == 7 then
-        ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.seqshift)
+        ded.SetOutSequenceNr(ded.GetOutSequenceNr() + ultimate.adaptiveseq)
     else 
         ded.SetOutSequenceNr(ded.GetOutSequenceNr() + amt)
     end 
