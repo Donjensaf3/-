@@ -7083,6 +7083,15 @@ ultimate.SwaySide = 1
 
 local baseyaw = 0
 
+/*
+		if bSendPacket then
+			y = AAchoke and ey - 180 + mrandom(1, 13) + mRand(0.03, 0.08) or ey - 180 + mrandom(1, 13) + mRand(0.03, 0.08)
+			p = 180.000008
+		else
+			y = AAchoke and ey - 125 + mrandom(1, 13) + mRand(0.03, 0.08) or ey - 125 + mrandom(1, 13) + mRand(0.03, 0.08)
+			p = 180.000008
+		end
+*/
 ultimate.CalcYaw = {
     // Backward
     [1] = function( cmd ) 
@@ -7810,7 +7819,6 @@ function ultimate.OnEntityCreated(ent)
 end
 
 
-local autopistol = false
 local altrapidfire = false
 local autoheal = false
 
@@ -9851,7 +9859,7 @@ do
     local chargestate, ccharge, chargecolor = "NOT CHARGED", 0, chargedcolor
 
     function ultimate.DrawSomeShit()
-
+        local gradcolor, chargedcolor, unchargedcolor = string_ToColor( ultimate.cfg.colors["Tickbase indicatorgrad"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicator"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicatoruncharged"] )
         if ultimate.cfg.vars["info"] then
 
             local Color, Color2 = string_ToColor( ultimate.cfg.colors["info"] ), string_ToColor( ultimate.cfg.colors["info2"] )
@@ -9929,7 +9937,6 @@ do
             
         end
         if ultimate.cfg.vars["Tickbase indicator"] then
-            local gradcolor, chargedcolor, unchargedcolor = string_ToColor( ultimate.cfg.colors["Tickbase indicatorgrad"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicator"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicatoruncharged"] )
             local lc, blc = string_ToColor( ultimate.cfg.colors["Tickbase indicator"] ), string_ToColor( ultimate.cfg.colors["Tickbase indicatoruncharged"] )
             local drawsind = ultimate.cfg.vars["Tickbase naebnut"]
 
@@ -11741,9 +11748,9 @@ ultimate.chatmsg = {
         "СМОТРИТЕ ДАУН УПАЛ ИЗ ИНВАЛИДНОЙ КОЛЯСКИ! ВОТ УМОРА!",
         "СКАЖИТЕ ХАЧИ ПИДОРЫ",
         "РЕЗАТЬ СВИНОПОДОБНЫХ ХОХЛОВ",
-        "Я думаю что, 'ТВИЧ' это пропагнада ISIS and TALIBAN!",
+        "Я думаю что, 'ТВИЧ' это пропагнада ISIS и TALIBAN!",
         "[SS] СЛАВА ГИТЛЕРУ! ГИТЛЕР ЖИВ! ХАЙ ГИТЛЕР! 卐[SS]NAZI POWER[SS]卐",
-        "%s, ты смешной! резал хохлов под Донецком в 2014!",
+        "%s, а ты смешной! Вспомнил как ты резал хохлов под Донецком в 2014!",
 
     },
 
@@ -14931,4 +14938,3 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
-
