@@ -4250,7 +4250,7 @@ function ultimate.tabs.Render()
     ultimate.ui.CheckBox( p, "Hit effect", "hit Effect" )
     ultimate.ui.TextEntry( "Hit effect path", "hit Effect str", p, 420 )
     ultimate.ui.CheckBox( p, "Hit hitboxes", "Hit HB", false , false , true )
-    ultimate.ui.Slider( p, "Hit hitboxes time","Hit HB time",0,2,1 )
+    ultimate.ui.Slider( p, "Hit hitboxes time","Hit HB time",0,5,0 )
     ultimate.ui.CheckBox( p, "Crosshair 3D", "Crosshair 3D", false, false, true,ultimate.spfuncs[31])
 
 end
@@ -5940,49 +5940,6 @@ function ultimate.CanStab( ent, pos, health )
 end
 
 
-function ultimate.knifevisual()
-    if ultimate.activeWeaponClass then
-        local tbl = ultimate.knifes[1]
-        local canuse = false 
-        for i = 1, #ultimate.knifes do    
-            if StartsWith(ultimate.activeWeaponClass, ultimate.knifes[i].str) then     
-                canuse = true         
-                tbl = ultimate.knifes[i]        
-                break
-            end
-        end 
-
-        if not canuse then return false, false end
-
-        local knifemode = ultimate.cfg.vars["Knifebot mode"]
-        local radius = 0
-
-        if knifemode == 1 then
-            radius = math_sqrt(tbl.rightdist)
-        elseif knifemode == 2 then
-            radius = math_sqrt(tbl.leftdist)
-        elseif knifemode == 3 then
-            radius = math_sqrt(tbl.rightdist)
-        end
-
-        local pos = me:GetShootPos() - Vector(0,0,15)
-        local Spos = me:GetShootPos()
-        local color = string_ToColor(ultimate.cfg.colors["Knifebot fov"])
-
-        if ultimate.cfg.vars["Figureknifebot"] == 1 then
-            cam_Start3D2D(pos, Angle(0, 0, 0), 1)       
-            surface_SetDrawColor(color) 
-            surface.DrawCircle(0, 0, radius)
-            cam_End3D2D()
-        elseif ultimate.cfg.vars["Figureknifebot"] == 2 then
-            render.DrawWireframeSphere( Spos, radius, 12, 12, color, false)
-        end
-    end
-end
-
-
-
-
 function ultimate.simtimeCheck( v )
     if not ultimate.cfg.vars["Wait for simtime update"] then return true end
     return v.simtime_updated
@@ -7083,15 +7040,7 @@ ultimate.SwaySide = 1
 
 local baseyaw = 0
 
-/*
-		if bSendPacket then
-			y = AAchoke and ey - 180 + mrandom(1, 13) + mRand(0.03, 0.08) or ey - 180 + mrandom(1, 13) + mRand(0.03, 0.08)
-			p = 180.000008
-		else
-			y = AAchoke and ey - 125 + mrandom(1, 13) + mRand(0.03, 0.08) or ey - 125 + mrandom(1, 13) + mRand(0.03, 0.08)
-			p = 180.000008
-		end
-*/
+
 ultimate.CalcYaw = {
     // Backward
     [1] = function( cmd ) 
@@ -8625,19 +8574,6 @@ end
 
 function ultimate.DrawESP()
 
-    if ultimate.cfg.vars["Bolt Tracers"] then
-        local bolts = {}
-        local Cbolts = string_ToColor( ultimate.cfg.colors["Bolt Tracers"] )
-        for k, v in pairs(ents.GetAll()) do
-            if v:GetClass() != "crossbow_bolt" then continue end
-            bolts = v
-            local mins, maxs = bolts:GetRenderBounds()
-            local mod = Vector(8, 0, 0)
-            cam_Start3D()
-            render.DrawWireframeBox( bolts:GetPos(), bolts:GetAngles(), mins - mod, maxs, Cbolts, true )
-            cam_End3D()
-        end
-    end
 
         if ultimate.cfg.vars["Crosshair 2D"] then
 
@@ -10746,118 +10682,6 @@ function ultimate.CS_Model_update(ply,model,tbl)
 end
 
 
-
-ultimate.stepCircles = {}
-
-function ultimate.GetRandomColor()
-    return Color(math.random(0, 255), math.random(0, 255), math.random(0, 255), 255)
-end
-
-function ultimate.AddStepCircle(pos, me)
-    table.insert(ultimate.stepCircles, {pos = pos, time = CurTime(), color = ultimate.GetRandomColor(), player = me})
-end  
-
-function ultimate.hPlayerFootstep(me, pos, foot, sound, volume, filter)
-    ultimate.AddStepCircle(pos, me)
-end
-
-
-function ultimate.SoundEsp()
-
-    ultimate.circleLifetime = 2
-    ultimate.minCircleRadius = 5
-    local view = ultimate.cfg.vars["Sound esp view"]
-    
-    if view == 1 then
-        ultimate.maxCircleRadius = 20
-    elseif view == 2 then
-        ultimate.maxCircleRadius = 25
-    end
-
-    if ultimate.cfg.vars["Sound esp"] then
-        ultimate.ct = CurTime()
-        for i = #ultimate.stepCircles, 1, -1 do
-            ultimate.circle = ultimate.stepCircles[i]
-            if ultimate.ct - ultimate.circle.time > ultimate.circleLifetime then
-                table.remove(ultimate.stepCircles, i)
-            else
-                if ultimate.circle.player ~= me then
-    
-                    ultimate.elapsed = ultimate.ct - ultimate.circle.time
-                    ultimate.alphasound = math.max(0, 255 * (1 - ultimate.elapsed / ultimate.circleLifetime))
-                    ultimate.radius = ultimate.minCircleRadius + (ultimate.maxCircleRadius - ultimate.minCircleRadius) * (ultimate.elapsed / ultimate.circleLifetime)
-
-                    local color = Color(ultimate.circle.color.r, ultimate.circle.color.g, ultimate.circle.color.b, ultimate.alphasound)
-                    local color2d = Color(255,255,255,ultimate.alphasound)
-                    local pos = ultimate.circle.pos
-                    
-                    if view == 1 then
-
-                    cam_Start3D()
-
-                    cam_IgnoreZ( true )
-
-                    render.SetColorMaterial()
-                    render.DrawSphere(ultimate.circle.pos, ultimate.radius, 30, 30, Color(ultimate.circle.color.r, ultimate.circle.color.g, ultimate.circle.color.b, ultimate.alphasound))        
-
-                    cam_IgnoreZ( false )
-                    
-                    cam_End3D()
-
-                    
-                    elseif view == 2 then
-
-                    cam_Start3D2D(pos, Angle(0, 0, 0), 1)
-                        cam_IgnoreZ( true )
-                        surface_SetDrawColor(color)
-                        surface.DrawCircle(0, 0, ultimate.radius, color2d) 
-                        cam_IgnoreZ( false )
-                    cam_End3D2D()
-
-                    end
-                end
-            end
-        end
-    end
-end
-ultimate.hitPlayer = nil
-ultimate.hitboxEndTime = 0 
-
-function ultimate.hithitbox()
-    if ultimate.cfg.vars["Hit HB"] then
-        local colorhb = string_ToColor( ultimate.cfg.colors["Hit HB"] )
-        if ultimate.hitPlayer and CurTime() < ultimate.hitboxEndTime then
-            local ply = ultimate.hitPlayer
-            if not IsValid(ply) then return end
-            if ply:GetHitBoxGroupCount() == nil then return end
-            local bigbon = colorhb
-            for group = 0, ply:GetHitBoxGroupCount() - 1 do
-                for hitbox = 0, ply:GetHitBoxCount(group) - 1 do
-                    local pos, ang = ply:GetBonePosition(ply:GetHitBoxBone(hitbox, group))
-                    local mins, maxs = ply:GetHitBoxBounds(hitbox, group)
-                    render.DrawWireframeBox(pos, ang, mins, maxs, bigbon, true)
-                end
-            end
-        else
-            ultimate.hitPlayer = nil
-        end
-    end
-end
-
-function ultimate.grena()
-    if ultimate.cfg.vars["Smg Grena"] then
-        local grenka = string_ToColor( ultimate.cfg.colors["Smg Grena"] )
-        for i, grenade in ipairs(ultimate.grenades) do
-            if IsValid(grenade) then
-                local pos = grenade:GetPos()
-                render.DrawWireframeBox(pos, Angle(0, 0, 0), Vector(-5, -5, -5), Vector(5, 5, 5), grenka, true)
-            else
-                table.remove(ultimate.grenades, i)
-            end
-        end
-    end
-end
-
 ultimate.isCanTrace = true
 function ultimate.Trace()
 	if (not ultimate.isCanTrace) then
@@ -10899,9 +10723,8 @@ function ultimate.PostDrawTranslucentRenderables()
     ultimate.drawCSModels_backtrack()
     ultimate.drawCSModels_real()
     ultimate.drawoutlineREAL()
-    ultimate.SoundEsp()
-    ultimate.grena()
-    ultimate.hithitbox()
+
+
     render_SetBlend(1)
     render_MaterialOverride()
 
@@ -10913,7 +10736,7 @@ function ultimate.PostDrawTranslucentRenderables()
         local moded = Vector(0,0, 10)
         local col = string_ToColor( ultimate.cfg.colors["Fallpred"] )
 
-		render.DrawWireframeBox(pw+moded, Angle(), ob, -ob, col, true)     
+		render_DrawWireframeBox(pw+moded, Angle(), ob, -ob, col, true)     
 	end
 
 end
@@ -11063,6 +10886,7 @@ ultimate.bone = {
 ultimate.killka = false
 ultimate.hitka  = false
 gameevent.Listen( "player_hurt" )
+ultimate.hitboxes = {}
 
 function ultimate.player_hurt(data)
 
@@ -11072,16 +10896,6 @@ function ultimate.player_hurt(data)
 	local hurted = Player( data.userid )
 	local attackerid = data.attacker
     local attackers = Player(data.attacker) 
- 
-
-    if attackers == me and hurted ~= me then
-        if ultimate.cfg.vars["Hit HB"] then
-            ultimate.hitboxDuration = ultimate.cfg.vars["Hit HB time"] 
-            ultimate.hitPlayer = hurted 
-            ultimate.hitboxEndTime = CurTime() + ultimate.hitboxDuration
-        end
-    end
-
 
     if hurted == me then
 
@@ -11134,6 +10948,31 @@ function ultimate.player_hurt(data)
         if ultimate.cfg.vars["Hitnumbers"] then
             local hp = hurted:Health() - health
             ultimate.hitnums[ #ultimate.hitnums + 1 ] = { time = CurTime(), add = 0, xdir = math_random(-1,1), ydir = math_random(-1,1), dmg = hp, crit = health <= 0 }
+        end
+        if ultimate.cfg.vars["Hit HB"] then
+            local hitboxData = {}
+            for hitboxGroupId = 0, hurted:GetHitboxSetCount() - 1 do
+                for hitboxId = 0, hurted:GetHitBoxCount(hitboxGroupId) - 1 do
+                    local boneId = hurted:GetHitBoxBone(hitboxId, hitboxGroupId)
+                    local boneMat = hurted:GetBoneMatrix(boneId)
+
+                    local bonePos = boneMat:GetTranslation()
+                    local boneAng = boneMat:GetAngles()
+
+                    local mins, maxs = hurted:GetHitBoxBounds(hitboxId, hitboxGroupId)
+
+                    hitboxData[#hitboxData + 1] = {
+                        pos = bonePos,
+                        angles = boneAng,
+                        mins = mins, maxs = maxs
+                    }
+                end
+            end
+
+            ultimate.hitboxes[#ultimate.hitboxes + 1] = {
+                createdTime = CurTime(),
+                hitboxData = hitboxData
+            }
         end
 
         if ultimate.cfg.vars["hit Effect"] then
@@ -12146,7 +11985,7 @@ function ultimate.entity_killed(data)
 	local vid = Entity(data.entindex_killed)
 
     if vid == me then
-
+        
         if ultimate.cfg.vars["Loger"] then        
             if ultimate.cfg.vars[ "LogerKill" ] then     
                 if IsValid(aid) then        
@@ -12363,6 +12202,12 @@ ultimate.slova = {
         "1",
         "хуило",
     },
+    [6] = {
+        "Rq",
+        "rage q",
+        "rageq",
+        "lq",
+    }
 
 }
 ultimate.responder = {
@@ -12383,7 +12228,7 @@ ultimate.responder = {
         "Rashka.tap",
         "Ilyaware v2",
         "PENISDEDA.NET V5",
-        "Ultimate v3",
+        "Ultimate.exploit",
     },
 
     [4] = {
@@ -12402,6 +12247,10 @@ ultimate.responder = {
         "абзываешся сам так и называешся!",
     },
 
+    [6] = {
+        "Ты просто слишкам изичный по этому он и ливнул",
+        "нищ писать нельзя rq!!!",
+    }
 
 } 
 
@@ -12430,6 +12279,8 @@ function ultimate.Responder(Message)
         return ultimate.responder[4][math_random(#ultimate.responder[4])]
     elseif ultimate.FindMessageInText(text,ultimate.slova[5]) then
         return ultimate.responder[5][math_random(#ultimate.responder[5])]
+    elseif ultimate.FindMessageInText(text,ultimate.slova[6]) then
+        return ultimate.responder[6][math_random(#ultimate.responder[6])]
     else
         return false
     end
@@ -13590,17 +13441,60 @@ end
 /*
     hooks -> PostDrawOpaqueRenderables
 */
+ultimate.stepCircles = {}
 
+function ultimate.hPlayerFootstep(me, pos, foot, sound, volume, filter)
+    table.insert(ultimate.stepCircles, {pos = pos, time = CurTime(), color = Color(math.random(0, 255), math.random(0, 255), math.random(0, 255), 255), player = me})
+end
 
 do
     local oldtrmat = ultimate.cfg.vars["Bullet tracers material"]
     local tracemat = Material("sprites/tp_beam001")
 
-    
+   
     local rad = 0
 
     function ultimate.hPostDrawOpaqueRenderables()
         if ultimate.UnSafeFrame then return end
+
+        if ultimate.cfg.vars["Sound esp"] then
+            local view = ultimate.cfg.vars["Sound esp view"]
+    
+            if view == 1 then
+                ultimate.maxCircleRadius = 20
+            elseif view == 2 then
+                ultimate.maxCircleRadius = 25
+            end
+
+            for i = #ultimate.stepCircles, 1, -1 do
+                ultimate.circle = ultimate.stepCircles[i]
+                if CurTime() - ultimate.circle.time > 2 then
+                    table.remove(ultimate.stepCircles, i)
+                else
+                    if ultimate.circle.player ~= me then
+        
+                        ultimate.elapsed = CurTime() - ultimate.circle.time
+                        ultimate.alphasound = math.max(0, 255 * (1 - ultimate.elapsed / 2))
+                        ultimate.radius = 5 + (ultimate.maxCircleRadius - 5) * (ultimate.elapsed / 2)
+
+                        local pos = ultimate.circle.pos
+                        
+                        if view == 1 then
+
+                            cam_IgnoreZ( true )
+                                render.SetColorMaterial()
+                                render.DrawSphere(ultimate.circle.pos, ultimate.radius, 30, 30, Color(ultimate.circle.color.r, ultimate.circle.color.g, ultimate.circle.color.b, ultimate.alphasound))        
+                            cam_IgnoreZ( false )
+
+                        elseif view == 2 then
+                            cam_IgnoreZ( true )
+                                surface.DrawCircle(0, 0, ultimate.radius, Color(255,255,255,ultimate.alphasound)) 
+                            cam_IgnoreZ( false )
+                        end
+                    end
+                end
+            end
+        end
 
         if ultimate.cfg.vars["Crosshair 3D"] then
 
@@ -13608,129 +13502,171 @@ do
             local tr = me:GetEyeTrace()
             local mode =  ultimate.cfg.vars["Crosshair 3D type"] 
             if mode == 1 then
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
-            local length = 10 
-            local thickness = 2
+                local length = 10 
+                local thickness = 2
+        
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
+                    surface_SetDrawColor(color)
+                    surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
+                    surface_DrawRect(-thickness * 0.5, -length * 0.5, thickness, length)
+                cam_End3D2D()
+            elseif mode == 2 then
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(0, 0, 90), 1)
+                    surface_SetDrawColor(color)
+                    surface.DrawCircle(0, 0, 5)
+                cam_End3D2D()
 
-            surface_SetDrawColor(color)
-            surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
-            surface_DrawRect(-thickness * 0.5, -length * 0.5, thickness, length)
-            
-            cam_End3D2D()
-        elseif mode == 2 then
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(0, 0, 0), 1)
+                    surface_SetDrawColor(color)
+                    surface.DrawCircle(0, 0, 5)
+                cam_End3D2D()
 
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(0, 0, 90), 1)
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
+                    surface_SetDrawColor(color)
+                    surface.DrawCircle(0, 0, 5)
+                cam_End3D2D()
+            elseif mode == 3 then
+                local length = 10 
+                local thickness = 2  
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
+                    surface_SetDrawColor(color)
 
-            surface_SetDrawColor(color)
-            surface.DrawCircle(0, 0, 5)
+                    surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
+                    surface_DrawRect(-thickness * 0.5, -length * 0.5, thickness, length)
+                    surface_DrawRect(thickness * 1.5, -length * 0.5, thickness, length-3.5)
+                    surface_DrawRect(-thickness*2.5, thickness * 0.5, thickness, length-5.5)
+                    surface_DrawRect(-length * 0.5, -length  * 0.5, length-3.5, thickness)
+                    surface_DrawRect(thickness - 3.5, length  * 0.3, length-3.5, thickness) 
+                cam_End3D2D()
 
-            cam_End3D2D()
-
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(0, 0, 0), 1)
-
-            surface_SetDrawColor(color)
-            surface.DrawCircle(0, 0, 5)
-    
-            cam_End3D2D()
-    
-    
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
-
-            surface_SetDrawColor(color)
-            surface.DrawCircle(0, 0, 5)
-    
-            cam_End3D2D()
-
-
-        elseif mode == 3 then
-
-    
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
-    
-   
-            local length = 10 
-            local thickness = 2  
-
-   
-            surface_SetDrawColor(color)
-            surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
-            surface_DrawRect(-thickness * 0.5, -length * 0.5, thickness, length)
-            surface_DrawRect(thickness * 1.5, -length * 0.5, thickness, length-3.5)
-            surface_DrawRect(-thickness*2.5, thickness * 0.5, thickness, length-5.5)
-            surface_DrawRect(-length * 0.5, -length  * 0.5, length-3.5, thickness)
-            surface_DrawRect(thickness - 3.5, length  * 0.3, length-3.5, thickness) 
-
-            cam_End3D2D()
-
-        elseif mode == 4 then
-            local size = 50
-            local pos = tr.HitPos + tr.HitNormal
-            local ang = tr.HitNormal:Angle() 
-            local mat = Material("sprites/light_glow02_add_noz")
-
-            render.SetMaterial(mat)
-            render.DrawSprite(pos, size, size, color, ang)
-
-        elseif mode == 5 then
-
-            local length = 3
-            local thickness = 3
-
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
-
-            surface_SetDrawColor(color)
-            surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
-
-            cam_End3D2D()
-
-        elseif mode == 6 then
-
-            cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
-
-            surface_SetDrawColor(color)
-            surface.DrawCircle(0, 0, 5)
-
-            cam_End3D2D()
-
-        end
-    end
-
-    if ultimate.cfg.vars["Knifebot"] then
-        if ultimate.cfg.vars["Knifebot fov"] then
-            ultimate.knifevisual()
-        end
-    end
-
-    if ultimate.cfg.vars["Ghost follower Metka"] then
-        if ultimate.cfg.vars["Ghost follower"] then
-
-            local player  =   player.GetBySteamID( ultimate.cfg.vars["GFID"] )
-
-            if IsValid( player ) then
-                
-                local angle = player:EyeAngles()+Angle( 0, 90, 90 )
-                local angles = player:EyeAngles()+Angle( 0, 0, 90 )
-                local pos = player:GetBonePosition(player:LookupBone("ValveBiped.Bip01_Head1"))	
-                local vector = Vector(0,0,50)
-                  
-                cam_Start3D2D( pos+vector, angle, 1 )
-                    cam_IgnoreZ(true)
-                    local gps = string_ToColor(ultimate.cfg.colors["Ghost follower Metka"])
-                    surface_SetMaterial(Material("vgui/white_additive"))
-                    surface.DrawCircle( 0, 0, 15, gps )
-                    cam_IgnoreZ(false)
-                cam_End3D2D ()
-
-                cam_Start3D2D( pos+vector, angles, 1 )
-                    cam_IgnoreZ(true)
-                    local gps = string_ToColor(ultimate.cfg.colors["Ghost follower Metka"])
-                    surface_SetMaterial(Material("vgui/white_additive"))
-                    surface.DrawCircle( 0, 0, 15, gps )
-                    cam_IgnoreZ(false)
-                cam_End3D2D ()
+            elseif mode == 4 then
+                render.SetMaterial(Material("sprites/light_glow02_add_noz"))
+                render.DrawSprite(tr.HitPos + tr.HitNormal, 50,50, color, tr.HitNormal:Angle() )
+            elseif mode == 5 then
+                local length = 3
+                local thickness = 3
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
+                    surface_SetDrawColor(color)
+                    surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
+                cam_End3D2D()
+            elseif mode == 6 then
+                cam_Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
+                    surface_SetDrawColor(color)
+                    surface.DrawCircle(0, 0, 5)
+                cam_End3D2D()
             end
         end
-    end
+        if ultimate.cfg.vars["Hit HB"] then
+            render.SetColorMaterial()
+            ultimate.timehb = CurTime()
+            for i = #ultimate.hitboxes, 1, -1 do
+                local hitboxSet = ultimate.hitboxes[i]
+                if (ultimate.timehb - hitboxSet.createdTime) > ultimate.cfg.vars["Hit HB time"] then
+                    table.remove(ultimate.hitboxes, i)
+                    continue
+                end
+
+                for j = 1, #hitboxSet.hitboxData do
+                    local hitboxData = hitboxSet.hitboxData[j]
+                    render_DrawWireframeBox(hitboxData.pos, hitboxData.angles, hitboxData.mins, hitboxData.maxs,string_ToColor(ultimate.cfg.colors["Hit HB"]), false)
+                end
+            end
+        end
+
+        if ultimate.cfg.vars["Knifebot"] then
+            if ultimate.cfg.vars["Knifebot fov"] then
+                if ultimate.activeWeaponClass then
+                    local tbl = ultimate.knifes[1]
+                    local canuse = false 
+                    for i = 1, #ultimate.knifes do    
+                        if StartsWith(ultimate.activeWeaponClass, ultimate.knifes[i].str) then     
+                            canuse = true         
+                            tbl = ultimate.knifes[i]        
+                            break
+                        end
+                    end 
+            
+                    if not canuse then return false, false end
+            
+                    local knifemode = ultimate.cfg.vars["Knifebot mode"]
+                    local radius = 0
+            
+                    if knifemode == 1 then
+                        radius = math_sqrt(tbl.rightdist)
+                    elseif knifemode == 2 then
+                        radius = math_sqrt(tbl.leftdist)
+                    elseif knifemode == 3 then
+                        radius = math_sqrt(tbl.rightdist)
+                    end
+            
+                    local pos = me:GetShootPos() - Vector(0,0,15)
+                    local Spos = me:GetShootPos()
+                    local color = string_ToColor(ultimate.cfg.colors["Knifebot fov"])
+            
+                    if ultimate.cfg.vars["Figureknifebot"] == 1 then
+                        surface_SetDrawColor(color) 
+                        surface.DrawCircle(0, 0, radius)
+                    elseif ultimate.cfg.vars["Figureknifebot"] == 2 then
+                        render_DrawWireframeBox( Spos, radius, 12, 12, color, false)
+                    end
+                end
+            end
+        end
+
+        if ultimate.cfg.vars["Bolt Tracers"] then
+            local bolts = {}
+            local Cbolts = string_ToColor( ultimate.cfg.colors["Bolt Tracers"] )
+            for k, v in pairs(ents.GetAll()) do
+                if v:GetClass() != "crossbow_bolt" then continue end
+                bolts = v
+                local mins, maxs = bolts:GetRenderBounds()
+                local mod = Vector(8, 0, 0)
+                render_DrawWireframeBox( bolts:GetPos(), bolts:GetAngles(), mins - mod, maxs, Cbolts, true )
+            end
+        end
+
+        if ultimate.cfg.vars["Smg Grena"] then
+            local grenka = string_ToColor( ultimate.cfg.colors["Smg Grena"] )
+            for i, grenade in ipairs(ultimate.grenades) do
+                if IsValid(grenade) then
+                    local pos = grenade:GetPos()
+                    render_DrawWireframeBox(pos, Angle(0, 0, 0), Vector(-5, -5, -5), Vector(5, 5, 5), grenka, true)
+                else
+                    table.remove(ultimate.grenades, i)
+                end
+            end
+        end
+
+        if ultimate.cfg.vars["Ghost follower Metka"] then
+            if ultimate.cfg.vars["Ghost follower"] then
+
+                local player  =   player.GetBySteamID( ultimate.cfg.vars["GFID"] )
+
+                if IsValid( player ) then
+                    
+                    local angle = player:EyeAngles()+Angle( 0, 90, 90 )
+                    local angles = player:EyeAngles()+Angle( 0, 0, 90 )
+                    local pos = player:GetBonePosition(player:LookupBone("ValveBiped.Bip01_Head1"))	
+                    local vector = Vector(0,0,50)
+                    
+                    cam_Start3D2D( pos+vector, angle, 1 )
+                        cam_IgnoreZ(true)
+                        local gps = string_ToColor(ultimate.cfg.colors["Ghost follower Metka"])
+                        surface_SetMaterial(Material("vgui/white_additive"))
+                        surface.DrawCircle( 0, 0, 15, gps )
+                        cam_IgnoreZ(false)
+                    cam_End3D2D ()
+
+                    cam_Start3D2D( pos+vector, angles, 1 )
+                        cam_IgnoreZ(true)
+                        local gps = string_ToColor(ultimate.cfg.colors["Ghost follower Metka"])
+                        surface_SetMaterial(Material("vgui/white_additive"))
+                        surface.DrawCircle( 0, 0, 15, gps )
+                        cam_IgnoreZ(false)
+                    cam_End3D2D ()
+                end
+            end
+        end
 
         if ultimate.cfg.vars["Angle arrows"] then
             local pos = me:GetPos()
@@ -13777,7 +13713,7 @@ do
                 end
 
 
-                render.DrawWireframeBox( impact.endPos, nullangle, ImpactMins, ImpactMaxs, tracercolors, true )   
+                render_DrawWireframeBox( impact.endPos, nullangle, ImpactMins, ImpactMaxs, tracercolors, true )   
                 render.SetMaterial( Material("sprites/light_ignorez") )
                 render.DrawSprite( impact.endPos, 25, 25, tracercolors)
             end
@@ -13800,7 +13736,7 @@ do
             for i = #ultimate.bulletImpacts, 1, -1 do
                 local impact = ultimate.bulletImpacts[i]
 
-                // impact.alpha = impact.alpha - 0.15
+                impact.alpha = impact.alpha - 0.05
 
                 if (curTime - impact.shootTime) > dieTime then
                     table_remove(ultimate.bulletImpacts, i)
@@ -14519,7 +14455,7 @@ function ultimate.drawhitbox_fake()
             if(!bone) then continue end 
             local min,max = ultimate.realModel:GetHitBoxBounds(hitbox,group) 
             local bonepos,boneang = ultimate.realModel:GetBonePosition(bone) 
-             render_DrawWireframeBox(bonepos,boneang,min,max,col,true) 
+            render_DrawWireframeBox(bonepos,boneang,min,max,col,true) 
         end
     end 
 end 
@@ -14938,3 +14874,4 @@ ultimate.AddHook( "PlayerFootstep",                ultimate.hPlayerFootstep )
 ultimate.AddHook( "PreDrawOpaqueRenderables",                  ultimate.hPreDrawOpaqueRenderables )
 ultimate.AddHook( "player_say",                  ultimate.player_say )
 ultimate.AddHook( "ShouldDrawLocalPlayer",                  ultimate.hShouldDrawLocalPlayer )
+
